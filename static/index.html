@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.24.0/axios.min.js"></script>
+  <link rel="stylesheet" href="./index.css">
+</head>
+
+<body>
+  <script>
+    axios.interceptors.response.use(res => res.data, err => Promise.reject(err));
+  </script>
+  <script type="module">
+    import { createApp } from 'https://unpkg.com/petite-vue?module'
+    import { API } from './api.js'
+
+    createApp({
+      navList: [],
+      subNavList: [],
+      data: [],
+      selete: {
+        nav: '',
+        subNav: '',
+        title: '',
+        menu: '',
+      },
+      titleList: [],
+      menus: [],
+      content: '',
+      link: '',
+      async mounted() {
+        const navList = await axios.get('/api/alldata')
+        this.navList = navList
+      },
+      onClickNav(item) {
+        this.selete.nav = item.type
+        this.subNavList = item.result
+      },
+      onClickSubNav(item) {
+        this.selete.subNav = item.title
+        if (item.children.length) {
+          this.titleList = item.children
+          this.selete.title = item.children[0].title
+          axios.get(`/api${item.children[0].example}`).then(data => {
+            this.menus = data
+          })
+        }
+      },
+      onClickTitle(item) {
+        this.selete.title = item.title
+        axios.get(`/api${item.example}`).then(data => {
+          this.menus = data
+        })
+      },
+      onMenuItem(menu) {
+        this.selete.menu = menu.title
+        this.content = menu.description
+        this.link = menu.link
+      }
+    }).mount()
+  </script>
+  <div id="app" v-scope @vue:mounted="mounted">
+    <div class="top">
+      <div class="nav">
+        <div class="nav-item" :class="{selected:selete.nav===item.type}" v-for="item in navList" :key="item.type"
+          @click="onClickNav(item)">
+          {{item.type}}
+        </div>
+      </div>
+      <div class="sub-nav" v-show="subNavList.length">
+        <div class="sub-nav-item" :class="{selected:selete.subNav===item.title}" @click="onClickSubNav(item)"
+          v-for="item in subNavList" :key="item.title">
+          {{item.title}}
+        </div>
+      </div>
+    </div>
+    <div class="bot" v-show="menus.length">
+      <div class="title">
+        <div class="title-item" :class="{selected:selete.title===item.title}" v-for="item in titleList"
+          @click="onClickTitle(item)">{{item.title}}</div>
+      </div>
+      <div class="menu">
+        <div class="menu-item" :class="{selected:selete.menu===menu.title}" v-for="menu in menus" :key="menu.link"
+          @click="onMenuItem(menu)">
+          {{menu.title}}
+        </div>
+      </div>
+      <div class="content" v-if="content" v-html="content"></div>
+      <iframe v-else :src="link" frameborder="0" width="100%" height="2000px"></iframe>
+    </div>
+</body>
+
+</html>

@@ -64,7 +64,5 @@ module.exports = async function (file) {
       }
     }
   }
-  const rLen = result.length;
-  const lLen = list.length;
   fs.writeFileSync(`./api/${file}.json`, JSON.stringify({ type, result }));
 };

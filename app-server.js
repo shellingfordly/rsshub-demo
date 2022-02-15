@@ -1,5 +1,5 @@
 const express = require("express");
-const RSSHub = require("rsshub");
+const RSSHub = require("../RSSHub/lib/pkg");
 const app = express();
 const createRoute = require("./utils/create-route");
 const colors = require("colors");
